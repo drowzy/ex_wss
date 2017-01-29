@@ -15,6 +15,7 @@ defmodule ExWss do
   defp dispatch do
     [
       {:_, [
+          {"/ws", ExWss.SocketAcceptor, []},
           {:_, Plug.Adapters.Cowboy.Handler, {ExWss.Router, []}}
         ]
       }
