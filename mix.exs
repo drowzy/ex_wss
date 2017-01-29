@@ -32,6 +32,7 @@ defmodule ExWss.Mixfile do
     [
       {:credo, "~> 0.4", only: [:dev, :test]},
       {:cowboy, "~> 1.0.0"},
+      {:poison, "~> 3.0"},
       {:plug, "~> 1.0"}
     ]
   end
