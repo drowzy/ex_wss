@@ -15,7 +15,8 @@ defmodule ExWss.Mixfile do
   # Type "mix help compile.app" for more information
   def application do
     # Specify extra applications you'll use from Erlang/Elixir
-    [extra_applications: [:logger]]
+    [mod: {ExWss, []},
+     extra_applications: [:logger, :cowboy, :plug]]
   end
 
   # Dependencies can be Hex packages:
@@ -28,6 +29,10 @@ defmodule ExWss.Mixfile do
   #
   # Type "mix help deps" for more examples and options
   defp deps do
-    []
+    [
+      {:credo, "~> 0.4", only: [:dev, :test]},
+      {:cowboy, "~> 1.0.0"},
+      {:plug, "~> 1.0"}
+    ]
   end
 end

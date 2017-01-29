@@ -1,18 +1,23 @@
 defmodule ExWss do
-  @moduledoc """
-  Documentation for ExWss.
-  """
+  use Application
 
-  @doc """
-  Hello world.
+  def start(_type, _args) do
+    import Supervisor.Spec
 
-  ## Examples
+    children = [
+      Plug.Adapters.Cowboy.child_spec(:http, ExWss.Router, [], [dispatch: dispatch(), port: 4444])
+    ]
 
-      iex> ExWss.hello
-      :world
+    opts = [strategy: :one_for_one, name: ExWss.Supervisor]
+    Supervisor.start_link(children, opts)
+  end
 
-  """
-  def hello do
-    :world
+  defp dispatch do
+    [
+      {:_, [
+          {:_, Plug.Adapters.Cowboy.Handler, {ExWss.Router, []}}
+        ]
+      }
+    ]
   end
 end
