@@ -3,17 +3,18 @@ defmodule ExWss.SocketAcceptor do
   @behaviour :cowboy_websocket_handler
 
   @registry_name :subscription_registry
-  @timeout 60000 # terminate if no activity for one minute
 
   def init(_, req, _opts) do
     {:upgrade, :protocol, :cowboy_websocket}
   end
 
-
   #Called on websocket connection initialization.
-  def websocket_init(_type, req, _opts) do
-    state = %{}
-    {:ok, req, state, @timeout}
+  def websocket_init(_type, req, opts) do
+    timeout = Keyword.get(opts, :timeout)
+    registry_key = Keyword.get(opts, :registry_key)
+    state = %{registry_key: registry_key}
+
+    {:ok, req, state, timeout}
   end
 
   # Handle 'ping' messages from the browser - reply
@@ -48,7 +49,7 @@ defmodule ExWss.SocketAcceptor do
     :ok
   end
 
-  defp try_register(msg) do
+  defp try_register() do
     case Registry.register(@registry_name, "sub", []) do
       {:ok, _} -> "registred"
       _ -> "Already registred"
