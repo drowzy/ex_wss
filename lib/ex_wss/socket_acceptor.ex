@@ -2,8 +2,6 @@ defmodule ExWss.SocketAcceptor do
 
   @behaviour :cowboy_websocket_handler
 
-  @registry_name :subscription_registry
-
   def init(_, req, _opts) do
     {:upgrade, :protocol, :cowboy_websocket}
   end
