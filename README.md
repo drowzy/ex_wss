@@ -1,19 +1,53 @@
 # ExWss
 
-**TODO: Add description**
+Elixir Websocket server using, plug and cowboy.
+
+yBuilt because I wanted hands on experience implementing a websocket server in Elixir
+without using Phoenix. As well as testing out the new process registry from elixir 1.4.0.
 
 ## Installation
+Requires Elixir >= 1.4.0
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `ex_wss` to your list of dependencies in `mix.exs`:
+```bash
+git clone https://github.com/drowzy/ex_wss
 
-```elixir
-def deps do
-  [{:ex_wss, "~> 0.1.0"}]
-end
 ```
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/ex_wss](https://hexdocs.pm/ex_wss).
+## Usage
 
+Run with:
+
+```bash
+iex -S mix
+```
+
+The HTTP server is listening on port 4444 by default. The websocket endpoint is located at ws://localhost:4444/ws
+Connected clients are closed if inactive longer than 60s. This can be changed in `config/config.exs` together with `port` and `ws_endpoint`.
+
+This implementation specifies a simple pubsub protocol where the client can subscribe to a topic and broadcast messages to a topic.
+
+### Subscribing
+
+A subscription to a topic can be done by sending a message on the form:
+
+```json
+{
+  "type": "subscribe",
+  "topic": "foo.bar"
+}
+```
+The message is either acked or nacked depending on outcome. Trying to subscribe to the same topic twice will result in a nack the second
+time.
+
+### Publishing
+A Publish is done by sending:
+
+```json
+{
+  "type": "publish",
+  "topic": "foo.bar",
+  "payload": "baz"
+}
+```
+
+The message will be broadcasted to all subscribers on the topic, the request will always be acked.
