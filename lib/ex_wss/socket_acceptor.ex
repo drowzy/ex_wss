@@ -1,34 +1,37 @@
 defmodule ExWss.SocketAcceptor do
 
   @behaviour :cowboy_websocket_handler
+  @sub_type "subscribe"
+  @pub_type "publish"
 
-  def init(_, req, _opts) do
+  def init(_, _req, _opts) do
     {:upgrade, :protocol, :cowboy_websocket}
   end
 
-  #Called on websocket connection initialization.
+  # Called on websocket connection initialization.
   def websocket_init(_type, req, opts) do
-    timeout = Keyword.get(opts, :timeout)
+    timeout      = Keyword.get(opts, :timeout)
     registry_key = Keyword.get(opts, :registry_key)
-    state = %{registry_key: registry_key}
-
-    IO.puts("Connected client #{Kernel.inspect(self())}")
-
+    state        = %{registry_key: registry_key}
+    # This is a good place to negotiate protocols, authenticate etc.
     {:ok, req, state}
   end
 
-  # Handle 'ping' messages from the browser - reply
+  # Respond to ping
   def websocket_handle({:text, "ping"}, req, state) do
     {:reply, {:text, "pong"}, req, state}
   end
 
-  # Handle other messages from client, either we
-  # subscribe, or publish
-  def websocket_handle({:text, content}, req, state) do
-    resp = content
-    |> Poison.decode!
-    |> action(state)
-    |> Poison.encode!
+  # Handle messages from client, either we subscribe, or publish.
+  # The result is a nack or ack depending on outcome.
+  def websocket_handle({:text, content}, req, %{registry_key: registry_key} = state) do
+    %{"type" => type, "topic" => topic } = msg = (content |> Poison.decode!)
+    resp = case type do
+             @sub_type -> ExWss.PubSub.subscribe(topic, registry_key)
+             @pub_type -> ExWss.PubSub.publish({topic, Map.get(msg, "payload")}, self(), registry_key)
+             _ -> %{type: "nack"}
+           end
+           |> Poison.encode!
 
     {:reply, {:text, resp}, req, state}
   end
@@ -42,37 +45,7 @@ defmodule ExWss.SocketAcceptor do
   end
 
   # No matter why we terminate, remove all of this pids subscriptions
-  def websocket_terminate(reason, _req, _state) do
+  def websocket_terminate(_reason, _req, _state) do
     :ok
   end
-
-  defp action(msg = %{"type" => "subscribe"}, %{registry_key: registry_key}) do
-    case Registry.register(registry_key, Map.get(msg, :topic), []) do
-      {:ok, _} -> ack()
-      _ -> nack()
-    end
-  end
-
-  defp action(msg = %{"type" => "publish", "payload" => payload}, %{registry_key: registry_key}) do
-    pid = self()
-
-    Registry.dispatch(registry_key, Map.get(msg, :topic), fn entries ->
-      for {p, _} <- entries, p != pid, do: send(p, {:broadcast, payload})
-    end)
-
-    ack()
-  end
-
-  defp action(_) do
-    nack()
-  end
-
-  defp ack do
-    %{type: "ack"}
-  end
-
-  defp nack do
-    %{type: "nack"}
-  end
-
 end
