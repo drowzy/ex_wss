@@ -1,6 +1,7 @@
 defmodule ExWss.SocketAcceptor do
 
   @behaviour :cowboy_websocket_handler
+
   @sub_type "subscribe"
   @pub_type "publish"
 
@@ -14,7 +15,7 @@ defmodule ExWss.SocketAcceptor do
     registry_key = Keyword.get(opts, :registry_key)
     state        = %{registry_key: registry_key}
     # This is a good place to negotiate protocols, authenticate etc.
-    {:ok, req, state}
+    {:ok, req, state timeout}
   end
 
   # Respond to ping

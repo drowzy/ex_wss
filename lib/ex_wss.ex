@@ -6,8 +6,8 @@ defmodule ExWss do
   def start(_type, _args) do
     import Supervisor.Spec
 
-    port = Application.get_env(:ex_wss, :port, 8888)
-    timeout = Application.get_env(:ex_wss, :timeout, 60000)
+    port        = Application.get_env(:ex_wss, :port, 8888)
+    timeout     = Application.get_env(:ex_wss, :timeout, 60000)
     ws_endpoint = Application.get_env(:ex_wss, :ws_endpoint, "ws")
 
     children = [
