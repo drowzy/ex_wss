@@ -2,8 +2,8 @@
 
 Elixir Websocket server using, plug and cowboy.
 
-yBuilt because I wanted hands on experience implementing a websocket server in Elixir
-without using Phoenix. As well as testing out the new process registry from elixir 1.4.0.
+Built because I wanted hands on experience implementing a websocket server in Elixir
+without using Phoenix.
 
 ## Installation
 Requires Elixir >= 1.4.0
@@ -36,8 +36,7 @@ A subscription to a topic can be done by sending a message on the form:
   "topic": "foo.bar"
 }
 ```
-The message is either acked or nacked depending on outcome. Trying to subscribe to the same topic twice will result in a nack the second
-time.
+The message is either acked or nacked depending on outcome. Trying to subscribe to the same topic twice will result in a nack the second time.
 
 ### Publishing
 A Publish is done by sending:
